@@ -1,10 +1,10 @@
-import { Collection } from "mongodb";
+import { Collection, WithId } from "mongodb";
 import { Customer } from "../types";
 
 import { CustomerService } from "./Customer.service";
 
 class UserQueue {
-  private currentChunk: Customer[];
+  private currentChunk: WithId<Customer>[];
 
   private readonly collection: Collection<Customer>;
   private readonly CHUNK_LIMIT = 1000;
@@ -20,8 +20,11 @@ class UserQueue {
     }, this.FLUSH_TIMEOUT_MS);
   }
 
-  async push(customer: Customer): Promise<void> {
-    this.currentChunk.push(CustomerService.anonymizeCustomer(customer));
+  async push(customer: WithId<Customer>): Promise<void> {
+    this.currentChunk.push({
+      _id: customer._id,
+      ...CustomerService.anonymizeCustomer(customer),
+    });
     if (this.currentChunk.length === this.CHUNK_LIMIT) {
       console.log("LIMIT FLUSH");
       await this.flush();

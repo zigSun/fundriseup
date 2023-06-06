@@ -9,6 +9,7 @@ import { Customer } from "./types";
 import {
   ChangeStreamInsertDocument,
   ChangeStreamUpdateDocument,
+  WithId,
 } from "mongodb";
 
 import { CustomerService } from "./service/Customer.service";
@@ -43,9 +44,11 @@ async function main(args: Set<string>) {
       .catch(() => undefined);
 
     const watchCursor = customersCollection.watch<
-      Customer,
-      | ChangeStreamInsertDocument<Customer>
-      | (ChangeStreamUpdateDocument<Customer> & { fullDocument: Customer })
+      WithId<Customer>,
+      | ChangeStreamInsertDocument<WithId<Customer>>
+      | (ChangeStreamUpdateDocument<WithId<Customer>> & {
+          fullDocument: WithId<Customer>;
+        })
     >(
       [
         {
